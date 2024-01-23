@@ -1,21 +1,21 @@
 import { readFileSync } from 'node:fs';
-import { Command } from './command.interface.js';
 import { resolve } from 'node:path';
+import { Command } from './command.interface.js';
 
-type PackageJson = {
+type PackageJSONConfig = {
   version: string;
-};
+}
 
-function isPackageJson(content: unknown): content is PackageJson {
+function isPackageJSONConfig(value: unknown): value is PackageJSONConfig {
   return (
-    typeof content === 'object' &&
-    content !== null &&
-    !Array.isArray(content) &&
-    Object.hasOwn(content, 'version')
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    Object.hasOwn(value, 'version')
   );
 }
 
-export class ViorsionCommand implements Command {
+export class VersionCommand implements Command {
   constructor(
     private readonly filePath: string = './package.json'
   ) {}
@@ -24,9 +24,10 @@ export class ViorsionCommand implements Command {
     const jsonContent = readFileSync(resolve(this.filePath), 'utf-8');
     const importedContent: unknown = JSON.parse(jsonContent);
 
-    if(! isPackageJson(importedContent)) {
-      throw new Error('Invalid package.json');
+    if (! isPackageJSONConfig(importedContent)) {
+      throw new Error('Failed to parse json content.');
     }
+
     return importedContent.version;
   }
 
@@ -34,7 +35,7 @@ export class ViorsionCommand implements Command {
     return '--version';
   }
 
-  public async execute(...params: string[]): Promise<void> {
+  public async execute(..._parameters: string[]): Promise<void> {
     try {
       const version = this.readVersion();
       console.info(version);
@@ -45,6 +46,5 @@ export class ViorsionCommand implements Command {
         console.error(error.message);
       }
     }
-
   }
 }
